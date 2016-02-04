@@ -4,34 +4,37 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 
 /**
  * This represents the heart of the browser: the collections
  * that organize all the URLs into useful structures.
- * 
+ *
  * @author Robert C. Duvall
  */
 public class BrowserModel {
     // constants
     public static final String PROTOCOL_PREFIX = "http://";
+    public static final String DEFAULT_RESOURCE_PACKAGE = "resources/";
     // state
     private URL myHome;
     private URL myCurrentURL;
     private int myCurrentIndex;
     private List<URL> myHistory;
     private Map<String, URL> myFavorites;
-
+    private ResourceBundle myResources;
 
     /**
      * Creates an empty model.
      */
-    public BrowserModel () {
+    public BrowserModel (String language) {
         myHome = null;
         myCurrentURL = null;
         myCurrentIndex = -1;
         myHistory = new ArrayList<>();
         myFavorites = new HashMap<>();
+        myResources = ResourceBundle.getBundle(DEFAULT_RESOURCE_PACKAGE + language);
     }
 
     /**
@@ -53,7 +56,9 @@ public class BrowserModel {
             myCurrentIndex--;
             return myHistory.get(myCurrentIndex);
         }
-        return null;
+        else
+        	throw new BrowserException(myResources.getString("BackError"));
+
     }
 
     /**
@@ -76,7 +81,7 @@ public class BrowserModel {
             return myCurrentURL;
         }
         catch (Exception e) {
-            return null;
+            throw new BrowserException(myResources.getString("ErrorOnLoad")+url);
         }
     }
 
@@ -119,16 +124,23 @@ public class BrowserModel {
         if (name != null && !name.equals("") && myCurrentURL != null) {
             myFavorites.put(name, myCurrentURL);
         }
+        else
+                throw new BrowserException(myResources.getString("GetFavError"));
+            
     }
 
     /**
      * Returns URL from favorites associated with given name, null if none set.
      */
     public URL getFavorite (String name) {
-        if (name != null && !name.equals("") && myFavorites.containsKey(name)) {
+    	try{
+    	//	if (name != null && !name.equals("") && myFavorites.containsKey(name)) {
             return myFavorites.get(name);
+    	}
+    	catch (Exception e) {
+            throw new BrowserException(myResources.getString("GetFavError"));
         }
-        return null;
+
     }
 
     // deal with a potentially incomplete URL
